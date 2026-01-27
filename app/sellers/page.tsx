@@ -1,6 +1,5 @@
-import Header from "./ui/Header";
 
-export default function HomePage() {
+export default function Sellers() {
   return (
     <>
       <main className="mx-auto max-w-7xl px-4 py-12">
