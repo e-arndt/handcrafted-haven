@@ -1,7 +1,7 @@
 // app/layout.tsx
 import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
-import "./globals.css";
+import "./global.css"; // changed from "globals.css" for correction in the file path
 import Header from "./ui/Header"
 import Footer from "./ui/Footer"
 
