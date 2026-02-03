@@ -2,10 +2,10 @@ import Image from "next/image";
 import { pool } from "@/lib/db";
 
 type ProductRow = {
-  id: string; // your screenshot shows id is character(8)
+  id: string; // id is character(8) ex 30002020 = Carved Untensils
   title: string;
   price_cents: number;
-  image_url: string; // assume it's always present for now
+  image_url: string; // ex "/products/art/flowerart.webp"
   category_code: string;
 };
 
@@ -40,7 +40,7 @@ export default async function ProductsPage() {
                 className="overflow-hidden rounded-lg border bg-white shadow-sm"
               >
                 <div className="relative aspect-square w-full bg-gray-100">
-                  {/* image_url is already like "/products/art/flowerart.webp" */}
+                  {/* image_url example "/products/art/flowerart.webp" */}
                   <Image
                     src={p.image_url}
                     alt={p.title}
