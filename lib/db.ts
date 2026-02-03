@@ -1,7 +1,7 @@
 import { Pool } from "pg";
 
 declare global {
-  // Prevent multiple pools during Next dev hot reload
+  // Prevents multiple pools during Next dev reload
   // eslint-disable-next-line no-var
   var pgPool: Pool | undefined;
 }
