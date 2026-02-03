@@ -2,11 +2,11 @@ import Image from "next/image";
 import { pool } from "@/lib/db";
 
 type SellerRow = {
-  id: string;           // character(8)
-  public_id: string;    // e.g. "seller-1"
-  display_name: string; // e.g. "Seller 1"
+  id: string;            // character(8)
+  public_id: string;     // e.g. seller-1
+  display_name: string;  // Seller 1
   bio: string | null;
-  avatar_url: string;   // e.g. "/sellers/seller-1.jpg" (or .webp if you convert)
+  avatar_url: string;    // /sellers/seller-1.webp
 };
 
 export default async function SellersPage() {
@@ -42,15 +42,11 @@ export default async function SellersPage() {
                   fill
                   className="object-cover"
                   sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                  priority={false}
                 />
               </div>
 
               <div className="p-4">
                 <h2 className="font-semibold leading-snug">{s.display_name}</h2>
-
-                {/* Optional: show public_id for debugging; remove later */}
-                {/* <p className="mt-1 text-xs text-gray-500">{s.public_id}</p> */}
 
                 <p className="mt-2 text-sm text-gray-700 line-clamp-4">
                   {s.bio ?? "Bio coming soon."}
