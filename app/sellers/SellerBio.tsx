@@ -19,7 +19,7 @@ export default function SellerBio({ bio, clampLines = 4 }: Props) {
         {text}
       </p>
 
-      {(
+      {bio && (
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
