@@ -1,31 +1,61 @@
-import Link from "next/link";
 import Image from "next/image";
-import { sellers } from "../lib/data";
+import { pool } from "@/lib/db";
 
-export default function SellersPage() {
+type SellerRow = {
+  id: string;            // character(8)
+  public_id: string;     // e.g. seller-1
+  display_name: string;  // Seller 1
+  bio: string | null;
+  avatar_url: string;    // /sellers/seller-1.webp
+};
+
+export default async function SellersPage() {
+  const result = await pool.query<SellerRow>(`
+    SELECT
+      id,
+      public_id,
+      display_name,
+      bio,
+      avatar_url
+    FROM sellers
+    ORDER BY created_at DESC
+    LIMIT 28;
+  `);
+
+  const sellers: SellerRow[] = result.rows;
+
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="mb-6 text-3xl font-bold">Our Sellers</h1>
+    <main className="mx-auto max-w-7xl px-4 py-12">
+      <section>
+        <h1 className="text-3xl font-bold mb-8">Sellers</h1>
 
-      <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-        {sellers.map((seller) => (
-          <Link
-            key={seller.id}
-            href={`/sellers/${seller.slug}`}
-            className="rounded-lg border p-4 transition hover:shadow-md"
-          >
-            <Image
-              src={seller.avatar}
-              alt={seller.name}
-              width={80}
-              height={80}
-              className="mb-3 rounded-full"
-            />
-            <h2 className="text-lg font-semibold">{seller.name}</h2>
-            <p className="text-sm text-gray-600">{seller.bio}</p>
-          </Link>
-        ))}
-      </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {sellers.map((s) => (
+            <article
+              key={s.id}
+              className="overflow-hidden rounded-lg border bg-white shadow-sm"
+            >
+              <div className="relative aspect-square w-full bg-gray-100">
+                <Image
+                  src={s.avatar_url}
+                  alt={s.display_name}
+                  fill
+                  className="object-cover"
+                  sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                />
+              </div>
+
+              <div className="p-4">
+                <h2 className="font-semibold leading-snug">{s.display_name}</h2>
+
+                <p className="mt-2 text-sm text-gray-700 line-clamp-4">
+                  {s.bio ?? "Bio coming soon."}
+                </p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }
