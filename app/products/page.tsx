@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { pool } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 type ProductRow = {
   id: string; // id is character(8) ex 30002020 = Carved Untensils
   title: string;
