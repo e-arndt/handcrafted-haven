@@ -20,7 +20,12 @@ export default function SellerBio({ bio }: Props) {
       {bio && (
         <button
           type="button"
-          onClick={() => setExpanded((v) => !v)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setExpanded((v) => !v);
+          }}
+
           className="mt-1 text-sm font-medium text-blue-600 hover:underline"
         >
           {expanded ? "Read less" : "Read more"}

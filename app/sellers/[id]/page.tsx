@@ -10,7 +10,9 @@ type Props = {
 
 type SellerRow = {
   id: string;
-  name: string;
+  display_name: string;
+  bio: string | null;
+  avatar_url: string;
 };
 
 type ProductRow = {
@@ -25,10 +27,10 @@ type ProductRow = {
 export default async function SellerProductsPage({ params }: Props) {
   const { id } = await params;
 
-  // 1) Load seller (for heading)
+  // Load seller (for header card)
   const sellerRes = await pool.query<SellerRow>(
     `
-    SELECT id, name
+    SELECT id, display_name, bio, avatar_url
     FROM sellers
     WHERE id = $1
     `,
@@ -36,6 +38,7 @@ export default async function SellerProductsPage({ params }: Props) {
   );
 
   const seller = sellerRes.rows[0];
+
   if (!seller) {
     return (
       <main className="mx-auto max-w-7xl px-4 py-12">
@@ -49,8 +52,7 @@ export default async function SellerProductsPage({ params }: Props) {
     );
   }
 
-  // 2) Load products for seller
-  // NOTE: adjust p.seller_id if your column name differs (could be sellerId, seller_id, etc.)
+  // Load products for seller
   const productsRes = await pool.query<ProductRow>(
     `
     SELECT
@@ -72,22 +74,39 @@ export default async function SellerProductsPage({ params }: Props) {
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-12">
-      <div className="flex items-end justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">{seller.name}</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            {products.length} product{products.length === 1 ? "" : "s"}
-          </p>
+      {/* Seller card header */}
+      <div className="mb-10 flex items-start justify-between gap-6">
+        <div className="flex items-center gap-4 rounded-xl border bg-white p-4 shadow-sm">
+          <div className="relative h-16 w-16 overflow-hidden rounded-full bg-gray-100">
+            <Image
+              src={seller.avatar_url}
+              alt={seller.display_name}
+              fill
+              className="object-cover"
+              sizes="64px"
+            />
+          </div>
+
+          <div>
+            <h1 className="text-2xl font-bold leading-tight">
+              {seller.display_name}
+            </h1>
+
+            <p className="mt-1 text-sm text-gray-600">
+              {products.length} product{products.length === 1 ? "" : "s"}
+            </p>
+          </div>
         </div>
 
         <Link
           href="/sellers"
-          className="rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
+          className="shrink-0 rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
         >
           ← Back to sellers
         </Link>
       </div>
 
+      {/* Products */}
       {products.length === 0 ? (
         <p className="text-gray-600">No products found for this seller.</p>
       ) : (
