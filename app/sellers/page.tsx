@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { pool } from "@/lib/db";
+import SellerBio from "./SellerBio"; // CLIENT COMPONENT for bio expansion button
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,6 @@ type SellerRow = {
   bio: string | null;
   avatar_url: string;    // /sellers/seller-1.webp
 };
-
 
 export default async function SellersPage() {
   const result = await pool.query<SellerRow>(`
@@ -49,11 +49,13 @@ export default async function SellersPage() {
               </div>
 
               <div className="p-4">
-                <h2 className="font-semibold leading-snug">{s.display_name}</h2>
+                <h2 className="font-semibold leading-snug">
+                  {s.display_name}
+                </h2>
 
-                <p className="mt-2 text-sm text-gray-700 line-clamp-4">
-                  {s.bio ?? "Bio coming soon."}
-                </p>
+                {/* CLIENT COMPONENT */}
+                <SellerBio bio={s.bio} clampLines={4} />
+
               </div>
             </article>
           ))}
