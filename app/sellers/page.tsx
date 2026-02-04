@@ -54,7 +54,7 @@ export default async function SellersPage() {
                 </h2>
 
                 {/* CLIENT COMPONENT */}
-                <SellerBio bio={s.bio} clampLines={4} />
+                <SellerBio bio={s.bio} />
 
               </div>
             </article>
