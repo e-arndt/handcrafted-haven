@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { pool } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 type SellerRow = {
   id: string;            // character(8)
   public_id: string;     // e.g. seller-1
@@ -8,6 +10,7 @@ type SellerRow = {
   bio: string | null;
   avatar_url: string;    // /sellers/seller-1.webp
 };
+
 
 export default async function SellersPage() {
   const result = await pool.query<SellerRow>(`
