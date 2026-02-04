@@ -7,9 +7,10 @@ export const dynamic = "force-dynamic";
 type ProductRow = {
   id: string; // character(8)
   title: string;
+  description: string | null; // <-- add
   price_cents: number;
   image_url: string;
-  category_code: string;
+  category_name: string; // <-- change from code to name
 };
 
 type Props = {
@@ -23,8 +24,6 @@ export default async function ProductsPage({ searchParams }: Props) {
   const pageRaw = Array.isArray(sp.page) ? sp.page[0] : sp.page;
   const page = Math.max(1, Number.parseInt(pageRaw ?? "1", 10) || 1);
 
-  const offset = (page - 1) * PAGE_SIZE;
-
   // 1) total count
   const countRes = await pool.query<{ total: string }>(`
     SELECT COUNT(*)::text AS total
@@ -34,7 +33,7 @@ export default async function ProductsPage({ searchParams }: Props) {
   const total = Number.parseInt(countRes.rows[0]?.total ?? "0", 10);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-  // If a request for page 999, clamp it.
+  // clamp page
   const safePage = Math.min(page, totalPages);
   const safeOffset = (safePage - 1) * PAGE_SIZE;
 
@@ -44,9 +43,10 @@ export default async function ProductsPage({ searchParams }: Props) {
       SELECT
         p.id,
         p.title,
+        p.description,
         p.price_cents,
         p.image_url,
-        c.category_code
+        c.name AS category_name
       FROM products p
       JOIN categories c ON c.id = p.category_id
       ORDER BY p.created_at DESC
@@ -122,9 +122,18 @@ export default async function ProductsPage({ searchParams }: Props) {
 
                 <div className="p-4">
                   <h2 className="font-semibold leading-snug">{p.title}</h2>
+
                   <p className="mt-1 text-sm text-gray-600">
-                    Category: {p.category_code}
+                    Category: {p.category_name}
                   </p>
+
+                  {/* description */}
+                  {p.description ? (
+                    <p className="mt-2 text-sm text-gray-700 line-clamp-3">
+                      {p.description}
+                    </p>
+                  ) : null}
+
                   <p className="mt-2 text-lg font-bold">${price}</p>
                 </div>
               </article>
@@ -156,4 +165,3 @@ export default async function ProductsPage({ searchParams }: Props) {
     </main>
   );
 }
-
