@@ -7,10 +7,10 @@ export const dynamic = "force-dynamic";
 type ProductRow = {
   id: string; // character(8)
   title: string;
-  description: string | null; // <-- add
+  description: string | null; 
   price_cents: number;
   image_url: string;
-  category_name: string; // <-- change from code to name
+  category_name: string; 
 };
 
 type Props = {
