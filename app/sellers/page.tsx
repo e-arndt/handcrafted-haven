@@ -1,5 +1,10 @@
 import Image from "next/image";
 import { pool } from "@/lib/db";
+import SellerBio from "./SellerBio"; // CLIENT COMPONENT for bio expansion button
+import Link from "next/link";
+
+
+export const dynamic = "force-dynamic";
 
 type SellerRow = {
   id: string;            // character(8)
@@ -30,11 +35,14 @@ export default async function SellersPage() {
         <h1 className="text-3xl font-bold mb-8">Sellers</h1>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {sellers.map((s) => (
-            <article
+          { sellers.map((s) => (
+            <Link
               key={s.id}
-              className="overflow-hidden rounded-lg border bg-white shadow-sm"
+              href={`/sellers/${s.id}`}
+              className="block"
             >
+              <article className="overflow-hidden rounded-lg border bg-white shadow-sm hover:shadow-md transition">
+
               <div className="relative aspect-square w-full bg-gray-100">
                 <Image
                   src={s.avatar_url}
@@ -46,13 +54,16 @@ export default async function SellersPage() {
               </div>
 
               <div className="p-4">
-                <h2 className="font-semibold leading-snug">{s.display_name}</h2>
+                <h2 className="font-semibold leading-snug">
+                  {s.display_name}
+                </h2>
 
-                <p className="mt-2 text-sm text-gray-700 line-clamp-4">
-                  {s.bio ?? "Bio coming soon."}
-                </p>
+                {/* CLIENT COMPONENT */}
+                <SellerBio bio={s.bio} />
+
               </div>
-            </article>
+                </article>
+            </Link>
           ))}
         </div>
       </section>
