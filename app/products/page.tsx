@@ -1,166 +1,149 @@
 import Image from "next/image";
-import Link from "next/link";
 import { pool } from "@/lib/db";
-
-export const dynamic = "force-dynamic";
+import Link from "next/link";
+import SearchProducts from "@/components/SearchProducts";
+import CategoryFilter from "@/components/CategoryFilter";
+import PriceSort from "@/components/PriceSort";
+import Pagination from "@/components/Pagination";
 
 type ProductRow = {
-  id: string; // character(8)
+  id: string; // id is character(8) ex 30002020 = Carved Untensils
   title: string;
-  description: string | null; 
   price_cents: number;
-  image_url: string;
-  category_name: string; 
+  image_url: string; // ex "/products/art/flowerart.webp"
+  category_code: string;
 };
 
-type Props = {
-  searchParams?: Promise<{ page?: string }>;
-};
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    query?: string;
+    category?: string;
+    sort?: string;
+    page?: string;
+  }>;
+}) {
+  const resolvedParams = await searchParams;
 
-const PAGE_SIZE = 28;
+  const query = resolvedParams?.query ?? "";
+  const category = resolvedParams?. category ?? "";
+  const sort = resolvedParams?. sort ?? "";
+  const page = Number(resolvedParams?.page) || 1;
 
-export default async function ProductsPage({ searchParams }: Props) {
-  const sp = (await searchParams) ?? {};
-  const pageRaw = Array.isArray(sp.page) ? sp.page[0] : sp.page;
-  const page = Math.max(1, Number.parseInt(pageRaw ?? "1", 10) || 1);
+  const PAGE_SIZE = 8;
+  const offset = (page - 1) * PAGE_SIZE;
 
-  // 1) total count
-  const countRes = await pool.query<{ total: string }>(`
-    SELECT COUNT(*)::text AS total
-    FROM products;
-  `);
+  let orderBy = "p.created_at DESC";
 
-  const total = Number.parseInt(countRes.rows[0]?.total ?? "0", 10);
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (sort === "price_asc") {
+    orderBy = "p.price_cents ASC";
+  } else if (sort === "price_desc") {
+    orderBy = "p.price_cents DESC";
+  }
 
-  // clamp page
-  const safePage = Math.min(page, totalPages);
-  const safeOffset = (safePage - 1) * PAGE_SIZE;
-
-  // 2) page results
   const result = await pool.query<ProductRow>(
     `
-      SELECT
-        p.id,
-        p.title,
-        p.description,
-        p.price_cents,
-        p.image_url,
-        c.name AS category_name
-      FROM products p
-      JOIN categories c ON c.id = p.category_id
-      ORDER BY p.created_at DESC
-      LIMIT $1
-      OFFSET $2;
-    `,
-    [PAGE_SIZE, safeOffset]
+    SELECT
+      p.id,
+      p.title,
+      p.price_cents,
+      p.image_url,
+      c.category_code
+    FROM products p
+    JOIN categories c ON c.id = p.category_id
+    WHERE 
+      ($1 = '' OR p.title ILIKE '%' || $1 || '%')
+      AND ($2 = '' OR c.category_code = $2)
+    ORDER BY ${orderBy}
+    LIMIT $3 OFFSET $4;
+  `,
+  [query, category, PAGE_SIZE, offset]
   );
 
   const products = result.rows;
 
-  const prevPage = safePage > 1 ? safePage - 1 : null;
-  const nextPage = safePage < totalPages ? safePage + 1 : null;
+  const countResult = await pool.query<{ count: string }>(
+    `
+    SELECT COUNT(*) 
+    FROM products p
+    JOIN categories c ON c.id = p.category_id
+    WHERE
+      ($1 = '' OR p.title ILIKE '%' || $1 || '%')
+      AND ($2 = '' OR c.category_code = $2);
+    `,
+    [query, category]
+  );
+
+  const totalProducts = Number(countResult.rows[0].count);
+  const totalPages = Math.ceil(totalProducts / PAGE_SIZE);
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-12">
       <section>
-        <div className="flex items-end justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Products</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              Page {safePage} of {totalPages} • {total} total products
-            </p>
-          </div>
+        <h1 className="text-3xl font-bold mb-8">Products</h1>
 
-          <nav className="flex items-center gap-2">
-            {prevPage ? (
-              <Link
-                href={`/products?page=${prevPage}`}
-                className="rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
-              >
-                ← Prev
-              </Link>
-            ) : (
-              <span className="rounded-md border px-3 py-2 text-sm text-gray-400">
-                ← Prev
-              </span>
-            )}
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <SearchProducts placeholder="Search products..." />
+          <PriceSort />
+        </div>
 
-            {nextPage ? (
-              <Link
-                href={`/products?page=${nextPage}`}
-                className="rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
-              >
-                Next →
-              </Link>
-            ) : (
-              <span className="rounded-md border px-3 py-2 text-sm text-gray-400">
-                Next →
-              </span>
-            )}
-          </nav>
+        <div className="flex gap-8">
+          <CategoryFilter/>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {products.length === 0 && (
+            <div className="col-span-full text-center py-16">
+              <h2 className="text-xl font-semibold mb-2">
+                No products found
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Try adjusting your search or filters.
+              </p>
+              <Link
+                href="/products"
+                className="inline-block rounded-md bg-gray-900 px-5 py-2 text-sm font-medium text-white hover:bg-gray-800"
+              >
+                Clear filters
+              </Link>
+            </div>
+          )}
+
           {products.map((p) => {
             const price = (p.price_cents / 100).toFixed(2);
 
             return (
-              <article
-                key={p.id}
-                className="overflow-hidden rounded-lg border bg-white shadow-sm"
-              >
-                <div className="relative aspect-square w-full bg-gray-100">
-                  <Image
-                    src={p.image_url}
-                    alt={p.title}
-                    fill
-                    className="object-cover"
-                    sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                  />
-                </div>
+              <Link key={p.id} href={`/products/${p.id}`}>
+                  <article
+                  key={p.id}
+                  className="group overflow-hidden rounded-lg border bg-white shadow-sm transition hover:shadow-md"
+                >
+                  <div className="relative aspect-square w-full bg-gray-100">
+                    {/* image_url example "/products/art/flowerart.webp" */}
+                    <Image
+                      src={p.image_url}
+                      alt={p.title}
+                      fill
+                      className="object-cover transition-transform group-hover:scale-105"
+                      sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                      priority={false}
+                    />
+                  </div>
 
-                <div className="p-4">
-                  <h2 className="font-semibold leading-snug">{p.title}</h2>
-
-                  <p className="mt-1 text-sm text-gray-600">
-                    Category: {p.category_name}
-                  </p>
-
-                  {/* description */}
-                  {p.description ? (
-                    <p className="mt-2 text-sm text-gray-700 line-clamp-3">
-                      {p.description}
+                  <div className="p-4">
+                    <h2 className="font-semibold leading-snug">{p.title}</h2>
+                    <p className="mt-1 text-sm text-gray-600">
+                      Category: {p.category_code}
                     </p>
-                  ) : null}
-
-                  <p className="mt-2 text-lg font-bold">${price}</p>
-                </div>
-              </article>
+                    <p className="mt-2 text-lg font-bold">${price}</p>
+                  </div>
+                </article>
+              </Link>
             );
           })}
         </div>
-
-        {/* bottom pager */}
-        <div className="mt-10 flex justify-center gap-2">
-          {prevPage ? (
-            <Link
-              href={`/products?page=${prevPage}`}
-              className="rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
-            >
-              ← Prev
-            </Link>
-          ) : null}
-
-          {nextPage ? (
-            <Link
-              href={`/products?page=${nextPage}`}
-              className="rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
-            >
-              Next →
-            </Link>
-          ) : null}
-        </div>
+        <Pagination totalPages={totalPages} />
       </section>
     </main>
   );
