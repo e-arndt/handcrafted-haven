@@ -1,6 +1,10 @@
 import Image from "next/image";
-import Link from "next/link";
 import { pool } from "@/lib/db";
+import SellerBio from "./SellerBio"; // CLIENT COMPONENT for bio expansion button
+import Link from "next/link";
+
+
+export const dynamic = "force-dynamic";
 
 type SellerRow = {
   id: string;            // character(8)
@@ -32,21 +36,16 @@ export default async function SellersPage() {
           Our Artisans
         </h1>
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {sellers.map((s) => (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          { sellers.map((s) => (
             <Link
               key={s.id}
-              href={`/sellers/${s.public_id}`}
-              className="
-                group overflow-hidden rounded-md
-                bg-sage
-                border border-[#6f8f6b]
-                transition
-                hover:-translate-y-1 hover:shadow-lg
-              "
+              href={`/sellers/${s.id}`}
+              className="block"
             >
-              {/* Image */}
-              <div className="relative aspect-square bg-[#6f8f6b]">
+              <article className="overflow-hidden rounded-lg border bg-white shadow-sm hover:shadow-md transition">
+
+              <div className="relative aspect-square w-full bg-gray-100">
                 <Image
                   src={s.avatar_url}
                   alt={s.display_name}
@@ -59,20 +58,16 @@ export default async function SellersPage() {
                 />
               </div>
 
-              {/* Content */}
-              <div className="bg-sage px-4 py-4">
-                <h2 className="font-heading text-lg text-cream">
+              <div className="p-4">
+                <h2 className="font-semibold leading-snug">
                   {s.display_name}
                 </h2>
 
-                <p className="mt-2 text-sm text-[#000000] line-clamp-3">
-                  {s.bio ?? "Handcrafted stories coming soon."}
-                </p>
+                {/* CLIENT COMPONENT */}
+                <SellerBio bio={s.bio} />
 
-                <span className="mt-4 inline-block text-xs uppercase tracking-wide text-cream opacity-80 group-hover:underline">
-                  View profile →
-                </span>
               </div>
+                </article>
             </Link>
           ))}
         </div>
