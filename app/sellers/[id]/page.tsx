@@ -74,37 +74,49 @@ export default async function SellerProductsPage({ params }: Props) {
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-12">
-      {/* Seller card header */}
-      <div className="mb-10 flex items-start justify-between gap-6">
-        <div className="flex items-center gap-4 rounded-xl border bg-white p-4 shadow-sm">
-          <div className="relative h-16 w-16 overflow-hidden rounded-full bg-gray-100">
-            <Image
-              src={seller.avatar_url}
-              alt={seller.display_name}
-              fill
-              className="object-cover"
-              sizes="64px"
-            />
-          </div>
-
-          <div>
-            <h1 className="text-2xl font-bold leading-tight">
-              {seller.display_name}
-            </h1>
-
-            <p className="mt-1 text-sm text-gray-600">
-              {products.length} product{products.length === 1 ? "" : "s"}
-            </p>
-          </div>
-        </div>
-
-        <Link
-          href="/sellers"
-          className="shrink-0 rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
-        >
-          ← Back to sellers
-        </Link>
+      {/* Seller header row: card + bio card + back button */}
+<div className="mb-10 flex items-start gap-6">
+    {/* Left: Seller identity card */}
+    <div className="flex items-center gap-4 rounded-xl border bg-white p-4 shadow-sm">
+      <div className="relative h-16 w-16 overflow-hidden rounded-full bg-gray-100">
+        <Image
+          src={seller.avatar_url}
+          alt={seller.display_name}
+          fill
+          className="object-cover"
+          sizes="64px"
+        />
       </div>
+
+      <div>
+        <h1 className="text-2xl font-bold leading-tight">
+          {seller.display_name}
+        </h1>
+
+        <p className="mt-1 text-sm text-gray-600">
+          {products.length} product{products.length === 1 ? "" : "s"}
+        </p>
+      </div>
+    </div>
+
+    {/* Middle: Bio card (fills space) */}
+    <div className="flex-1 rounded-xl border bg-white p-4 shadow-sm">
+      <p className="text-sm font-medium text-gray-500">About</p>
+
+      <p className="mt-1 text-sm text-gray-700">
+        {seller.bio?.trim() || "This seller hasn’t added a bio yet."}
+      </p>
+    </div>
+
+    {/* Right: Back button */}
+    <Link
+      href="/sellers"
+      className="shrink-0 rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
+    >
+      ← Back to sellers
+    </Link>
+  </div>
+
 
       {/* Products */}
       {products.length === 0 ? (
@@ -115,36 +127,35 @@ export default async function SellerProductsPage({ params }: Props) {
             const price = (p.price_cents / 100).toFixed(2);
 
             return (
-              <article
-                key={p.id}
-                className="overflow-hidden rounded-lg border bg-white shadow-sm"
-              >
-                <div className="relative aspect-square w-full bg-gray-100">
-                  <Image
-                    src={p.image_url}
-                    alt={p.title}
-                    fill
-                    className="object-cover"
-                    sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                  />
-                </div>
+              <Link key={p.id} href={`/products/${p.id}`} className="block">
+                <article className="group overflow-hidden rounded-lg border bg-white shadow-sm transition hover:shadow-md">
+                  <div className="relative aspect-square w-full bg-gray-100">
+                    <Image
+                      src={p.image_url}
+                      alt={p.title}
+                      fill
+                      className="object-cover transition-transform group-hover:scale-105"
+                      sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    />
+                  </div>
 
-                <div className="p-4">
-                  <h2 className="font-semibold leading-snug">{p.title}</h2>
+                  <div className="p-4">
+                    <h2 className="font-semibold leading-snug">{p.title}</h2>
 
-                  <p className="mt-1 text-sm text-gray-600">
-                    Category: {p.category_name}
-                  </p>
-
-                  {p.description ? (
-                    <p className="mt-2 text-sm text-gray-700 line-clamp-3">
-                      {p.description}
+                    <p className="mt-1 text-sm text-gray-600">
+                      Category: {p.category_name}
                     </p>
-                  ) : null}
 
-                  <p className="mt-2 text-lg font-bold">${price}</p>
-                </div>
-              </article>
+                    {p.description ? (
+                      <p className="mt-2 text-sm text-gray-700 line-clamp-3">
+                        {p.description}
+                      </p>
+                    ) : null}
+
+                    <p className="mt-2 text-lg font-bold">${price}</p>
+                  </div>
+                </article>
+              </Link>
             );
           })}
         </div>

@@ -6,6 +6,9 @@ import CategoryFilter from "@/components/CategoryFilter";
 import PriceSort from "@/components/PriceSort";
 import Pagination from "@/components/Pagination";
 
+export const dynamic = "force-dynamic";
+
+
 type ProductRow = {
   id: string; // id is character(8) ex 30002020 = Carved Untensils
   title: string;
