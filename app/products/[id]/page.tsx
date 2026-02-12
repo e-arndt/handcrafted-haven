@@ -251,6 +251,10 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
                 </Link>{" "}
                 to write a review.
               </p>
+            ) : user.role === "seller" ? (
+              <p className="mt-2 text-sm text-gray-500">
+                Sellers can’t write reviews.
+              </p>
             ) : !showReviewForm ? (
               <p className="mt-2 text-sm">
                 <Link className="underline" href={`?review=1#reviews`}>
@@ -261,21 +265,16 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
               <div className="mt-3">
                 <ReviewForm
                   productId={id}
-                  existing={
-                    myReview
-                      ? { rating: myReview.rating, comment: myReview.comment }
-                      : null
-                  }
+                  existing={myReview ? { rating: myReview.rating, comment: myReview.comment } : null}
                 />
-
-                {/* Close form = remove query param */}
                 <p className="mt-2 text-xs text-gray-500">
-                  <Link className="underline" href={`/products/${id}#reviews`}>
-                    Close form
-                  </Link>
+                  <Link className="underline" href={`#reviews`}>Cancel</Link>
+                  {" · "}
+                  <Link className="underline" href={`?`}>Close form</Link>
                 </p>
               </div>
             )}
+
 
             {/* ---------- Review list ---------- */}
             {reviews.length === 0 ? (
